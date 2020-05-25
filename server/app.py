@@ -1,7 +1,8 @@
 import uuid, json
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
+from utils import *
 
 TASKS = [
     {
@@ -36,6 +37,25 @@ def tasks():
             'title': data.get('task')
         })
     return { "tasks": TASKS}
+
+@app.route('/tasks/<task_id>', methods=['DELETE'])
+def remove_task(task_id):
+    index = findIndexById(task_id, TASKS)
+    if index >= 0:
+        TASKS.pop(index)
+        return {"tasks": TASKS}
+    else:
+        abort(404)
+
+@app.route('/tasks/update', methods=['PUT'])
+def update_task():
+    data = request.get_json()
+    index = findIndexById(data.get('id'), TASKS)
+    TASKS[index] = {
+        'id' : data.get('id'),
+        'title' : data.get('title')
+    }
+    return { "tasks": TASKS }
 
 if __name__ == '__main__':
     app.run()
